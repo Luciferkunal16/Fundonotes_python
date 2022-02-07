@@ -1,56 +1,53 @@
 import json
+import logging
+
 from .models import User
 from django.http import HttpResponse
+from django.http import JsonResponse
+
+logging.basicConfig(filename="user.log", level=logging.INFO)
 
 
 def registration(request):
     """
+    :Description:
     for registration of new user.
     add new entries to Database
     :param request:
-    :return:
+    :return:Httpresponse
     """
-    user_dict = json.loads(request.body)
-    users = User.objects.all()
-    for user in users:
-        if user_dict.get("username") == user.username:
-            return HttpResponse("User is already Registered")
+    try:
 
-    username = user_dict.get("username")
-    password = user_dict.get("password")
-    email = user_dict.get("email")
-    phone_number = user_dict.get("phonenumber")
-    is_verified = user_dict.get("is_verified")
-    user = User(username=username, password=password, email=email, phonenumber=phone_number, is_verified=is_verified)
-    user.save()
-    return HttpResponse("User Registered Successfully")
+        user_dict = json.loads(request.body)
+        user = User.objects.filter(username=user_dict.get("username"), password=user_dict.get("password")).exists()
+        if user:
+            return JsonResponse({"message": "User Already Registered"})
+        new_user = User(username=user_dict.get("username"), password=user_dict.get("password"),
+                        email=user_dict.get("email"),
+                        phonenumber=user_dict.get("phonenumber"), is_verified=user_dict.get("is_verified"))
+        new_user.save()
+        return JsonResponse(
+            {"message": "User registered successfully", "data": "username:{}".format(new_user.username)})
+        logging.debug("Registration Successfull")
+    except Exception as exc:
+        logging.error(exc)
+        return JsonResponse({"Error": exc})
 
 
 def login(request):
     """
     For login of user
     :param request:
-    :return:
+    :return:Httpresponse
     """
-    user_dict = json.loads(request.body)
-    users = User.objects.all()
-    for user in users:
-        if user_dict.get("username") == user.username and user_dict.get("password") == user.password:
-            return HttpResponse("Login Successfull")
+    try:
+        user_dict = json.loads(request.body)
+        user = User.objects.filter(username=user_dict.get("username"), password=user_dict.get("password")).exists()
+        if user :
+            return JsonResponse({"message": "Login Successfull!!"})
+        return JsonResponse({"message": "Login Failed Invalid Credentials!!!"})
+    except Exception as exc:
+        print(exc)
+        logging.error(exc)
+        return JsonResponse({"Error": exc})
 
-    return HttpResponse("Login Failed Invalid Credentials!!!")
-
-
-def retrive(request):
-    """
-    for retriving all the data from database
-    :param request:
-    :return:
-    """
-    users = User.objects.all()
-    list_of_user = list()
-    for user in users:
-        dict_of_user = {"username": user.username, "password": user.password, "email": user.email,
-                        "phonenumber": user.phonenumber, "is_verified": user.is_verified}
-        list_of_user.append(dict_of_user)
-    return HttpResponse(list_of_user)
