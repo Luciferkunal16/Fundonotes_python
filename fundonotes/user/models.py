@@ -1,9 +1,7 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class User(models.Model):
-    username = models.CharField(max_length=200)
-    password = models.CharField(max_length=100)
-    email = models.CharField(max_length=200)
-    phonenumber = models.BigIntegerField()
+class User(AbstractUser):
+    phone_number = models.CharField(max_length=10, unique=False)
     is_verified = models.BooleanField()
