@@ -3,10 +3,16 @@ import logging
 
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
+
+from .serializers import UserSerializer
 
 User = get_user_model()
 
@@ -24,21 +30,28 @@ class UserRegistration(APIView):
         :return:Jsonresponse
         """
         try:
-            user_dict = json.loads(request.body)
-            user = authenticate(username=user_dict.get("username"), password=user_dict.get("password"))
-            if user:
-                return JsonResponse({"message": "User Already Registered"})
-            new_user = User.objects.create_user(username=user_dict.get("username"),
-                                                password=user_dict.get("password"), email=user_dict.get("email"),
-                                                phone_number=user_dict.get("phone_number"),
-                                                is_verified=user_dict.get("is_verified")
-                                                )
+            serializer = UserSerializer(data=request.data)
+            if serializer.is_valid():
+                # serializer.save()
 
-            new_user.save()
-            return JsonResponse(
-                {"message": "User Registered Successfully ", "data": "User name is {}".format(new_user.username)},
-                safe=False)
-            logging.debug("Registration Successfull")
+                #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+                # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                user = authenticate(username=serializer.data['username'], password=serializer.data['password'])
+                if user:
+                    return JsonResponse({"message": "User Already Registered"})
+                new_user = User.objects.create_user(username=serializer.data['username'],
+                                                    password=serializer.data['password'],
+                                                    email=serializer.data['email'],
+                                                    phone_number=serializer.data['phone_number'],
+                                                    is_verified=serializer.data['is_verified']
+                                                    )
+
+                new_user.save()
+                return JsonResponse(
+                    {"message": "User Registered Successfully ", "data": "User name is {}".format(new_user.username)},
+                    safe=False)
+                logging.debug("Registration Successfull")
         except Exception as e:
             print(e)
             logging.error(e)
@@ -53,11 +66,13 @@ class UserLogin(APIView):
         :return:Httpresponse
         """
         try:
-            user_dict = json.loads(request.body)
-            user = authenticate(username=user_dict.get("username"), password=user_dict.get("password"))
-            if user:
-                return JsonResponse({"message": "Login Successfull!!"}, safe=False)
-            return JsonResponse({"message": "Login Failed Invalid Credentials!!!"}, safe=False)
+            serializer = UserSerializer(data=request.data)
+            if serializer.is_valid():
+
+                user = authenticate(username=serializer.data['username'], password=serializer.data['password'])
+                if user:
+                    return JsonResponse({"message": "Login Successfull!!"}, safe=False)
+                return JsonResponse({"message": "Login Failed Invalid Credentials!!!"}, safe=False)
         except Exception as exc:
             logging.error(exc)
             return HttpResponse("error is {}".format(exc))
