@@ -8,8 +8,7 @@ from rest_framework.views import APIView
 from .models import User
 from django.contrib.auth import get_user_model, authenticate
 
-from fundonotes import settings
-from .utils import EncodeDecodeToken
+from .utils import EncodeDecodeToken,Email
 
 from .serializers import UserSerializer
 from django.core.mail import send_mail
@@ -40,18 +39,15 @@ class UserRegistration(APIView):
                                                 phone_number=serializer.data['phone_number'],
 
                                                 )
-            encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
-            send_mail(from_email=settings.EMAIL_HOST, recipient_list=[serializer.data['email']],
-                      message="Welcome to Fundonotes App ,Thanks for installing our software\n Your Activation url = "
-                              "http://127.0.0.1:8000/user/validate/{}".format(
-                          encoded_token),
-                      subject="Link for Your Registration", fail_silently=False, )
 
+            encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
+            print(encoded_token)
+            Email.send_email(token=encoded_token,to=serializer.data['email'],name=serializer.data['username'])
             logging.debug("Registration Successfull")
             return Response(
                 {
                     "message": "User Registered Successfully ",
-                    "token": "{}".format(encoded_token)
+
                 }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
@@ -90,7 +86,7 @@ class UserLogin(APIView):
 
 
 class ValidateToken(APIView):
-    def get(self, token):
+    def get(self,request,token):
         """
         use to validate the user and verify the user
         :param token:
@@ -98,7 +94,7 @@ class ValidateToken(APIView):
         """
         try:
 
-            decoded_token = EncodeDecodeToken.decode_token(token)
+            decoded_token = EncodeDecodeToken.decode_token(token=token)
             user = User.objects.get(id=decoded_token.get('user_id'))
             user.is_verified = True
             user.save()
