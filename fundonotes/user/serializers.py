@@ -1,3 +1,5 @@
+from _testcapi import instancemethod
+
 from rest_framework import serializers
 from .models import User
 
@@ -8,12 +10,13 @@ from .models import User
 #         fields = ['id', 'username', 'password', 'email', 'phone_number', 'is_verified']
 
 class UserSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
+    id = serializers.IntegerField(required=False)
     username = serializers.CharField(allow_blank=False, allow_null=False, required=True)
     email = serializers.CharField(required=False)
     password = serializers.CharField(required=True, allow_null=False, allow_blank=False)
     is_verified = serializers.BooleanField(default=False)
     phone_number = serializers.CharField(max_length=10, required=False)
+    token = serializers.CharField(max_length=256, required=False)
 
     def create(self, validated_data):
         """
@@ -25,10 +28,12 @@ class UserSerializer(serializers.Serializer):
         """
         Update and return an existing `Snippet` instance, given the validated data.
         """
+        instance.id=validated_data.get('id',instance.id)
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.password = validated_data.get('password', instance.password)
         instance.is_verified = validated_data.get('is_verified', instance.is_verified)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.token=validated_data.get('token',instance.token)
         instance.save()
         return instance

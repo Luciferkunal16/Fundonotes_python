@@ -1,14 +1,18 @@
+import json
 import logging
+
 from django.http import HttpResponse
-from django.http import JsonResponse
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
+from .models import User
+from django.contrib.auth import get_user_model, authenticate
+
+from fundonotes import settings
+from .utils import EncodeDecodeToken
 
 from .serializers import UserSerializer
-
-User = get_user_model()
+from django.core.mail import send_mail
 
 logging.basicConfig(filename="user.log", level=logging.INFO)
 
@@ -21,36 +25,42 @@ class UserRegistration(APIView):
         for registration of new user.
         add new entries to Database
         :param request:
-        :return:Jsonresponse
+        :return:response
         """
         try:
             serializer = UserSerializer(data=request.data)
-            if serializer.is_valid():
-                # serializer.save()
+            serializer.is_valid(raise_exception=True)
+            user = User.objects.filter(username=serializer.data['username'])
+            if user:
+                return Response({"message": "User Already Registered"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            new_user = User.objects.create_user(username=serializer.data['username'],
+                                                password=serializer.data['password'],
+                                                email=serializer.data['email'],
+                                                phone_number=serializer.data['phone_number'],
 
-                #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-                # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                                                )
+            encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
+            send_mail(from_email=settings.EMAIL_HOST, recipient_list=[serializer.data['email']],
+                      message="Welcome to Fundonotes App ,Thanks for installing our software\n Your Activation url = "
+                              "http://127.0.0.1:8000/user/validate/{}".format(
+                          encoded_token),
+                      subject="Link for Your Registration", fail_silently=False, )
 
-                user = User.objects.filter(username=serializer.data['username'])
-                if user:
-                    return JsonResponse({"message": "User Already Registered"})
-                new_user = User.objects.create_user(username=serializer.data['username'],
-                                                    password=serializer.data['password'],
-                                                    email=serializer.data['email'],
-                                                    phone_number=serializer.data['phone_number'],
-                                                    is_verified=serializer.data['is_verified']
-                                                    )
-
-
-                logging.debug("Registration Successfull")
-                return JsonResponse(
-                    {"message": "User Registered Successfully ", "data": "User name is {}".format(new_user.username)},
-                    safe=False)
+            logging.debug("Registration Successfull")
+            return Response(
+                {
+                    "message": "User Registered Successfully ",
+                    "token": "{}".format(encoded_token)
+                }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             print(e)
             logging.error(e)
-            return HttpResponse(e)
+            return Response(
+                {
+                    "message": "data storing failed"
+                }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLogin(APIView):
@@ -58,22 +68,43 @@ class UserLogin(APIView):
         """
         For login of user
         :param request:
-        :return:Httpresponse
+        :return:response
         """
         try:
             serializer = UserSerializer(data=request.data)
-            if serializer.is_valid():
+            serializer.is_valid(raise_exception=True)
+            user = authenticate(username=serializer.data['username'], password=serializer.data['password'])
 
-                user = authenticate(username=serializer.data['username'], password=serializer.data['password'])
-                if user:
-                    return JsonResponse({"message": "Login Successfull!!"}, safe=False)
-                return JsonResponse({"message": "Login Failed Invalid Credentials!!!"}, safe=False)
+            if user and user.is_verified == True:
+                token=EncodeDecodeToken.encode_token(payload=user.pk)
+                return Response({"message": "Login Successfull!!","token":"{}".format(token)}, status=status.HTTP_201_CREATED)
+
+            return Response({
+                "message": "login Unsuccessfull"
+            },
+                status=status.HTTP_404_NOT_FOUND)
         except Exception as exc:
+            print(exc)
             logging.error(exc)
-            return HttpResponse("error is {}".format(exc))
-# title ,disc,created at,user id
-# create noe
-# get note all for user id(0)
-# put for update
-#
-#     delete
+            return Response({"error": "{}".format(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ValidateToken(APIView):
+    def get(self, token):
+        """
+        use to validate the user and verify the user
+        :param token:
+        :return:Response
+        """
+        try:
+
+            decoded_token = EncodeDecodeToken.decode_token(token)
+            user = User.objects.get(id=decoded_token.get('user_id'))
+            user.is_verified = True
+            user.save()
+
+            return Response({"message": "Validation Successfull"},
+                            status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logging.error(e)
+            return HttpResponse(e)
