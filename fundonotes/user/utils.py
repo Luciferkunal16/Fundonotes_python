@@ -27,10 +27,21 @@ class EncodeDecodeToken:
 
 
 class Email:
+    """
+    Used to Send Email for Validation of user after Registration
+    """
     @staticmethod
-    def send_email( to,token,name ):
+    def send_email(to, token, name):
+        """
+        to send the email to desired user
+        :param to:
+        :param token:
+        :param name:
+        :return:
+        """
         send_mail(from_email=settings.EMAIL_HOST, recipient_list=[to],
-                  message="Hy {}\n Welcome to Fundonotes App ,Thanks for installing our software\n Your Activation url = "
-                          "http://127.0.0.1:8000/user/validate/{}".format( name,
-                      token),
+                  message="Hy {}\nWelcome to Fundonotes App ,Thanks for installing our software\nYour Activation url = "
+                          "http://127.0.0.1:8000/user/validate/{}".format(name,
+                                                                          token),
                   subject="Link for Your Registration", fail_silently=False, )
+

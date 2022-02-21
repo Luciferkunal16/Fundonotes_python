@@ -1,5 +1,5 @@
 import logging
-
+import json
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,24 +8,32 @@ from .models import Note
 
 from .serializer import NotesSerializer
 from .utils import verify_token
+from .utils import RedisOpertions
 
 logging.basicConfig(filename="note.log", level=logging.INFO)
 
 
 class Notes(APIView):
+    def __init__(self):
+        self.redis_obj = RedisOpertions()
 
     @verify_token
     def post(self, request):
         """
-        For crating a new Note for a user
+        For creating a new Note for a user
         :param request:
         :return:Response
         """
 
         try:
             serializer = NotesSerializer(data=request.data)
+            print(request.data)
             serializer.is_valid(raise_exception=True)
+
             serializer.save()
+
+            RedisOpertions().add_note(serializer.data)
+            # print(RedisOpertions().get_note(json.dumps(serializer.data)))
             return Response({"message": "Note Created", "data": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"message": "Note Creation Unsuccessfull", "error": "{}".format(e)},
@@ -41,13 +49,16 @@ class Notes(APIView):
         try:
             note = Note.objects.filter(user_id=request.data.get("user_id"))
             serializer = NotesSerializer(note, many=True)
+            print(RedisOpertions().get_note(user_id=request.data.get("user_id")))
+
             return Response(
                 {"message": "Your Notes are Found", "data": serializer.data},
                 status=status.HTTP_302_FOUND)
 
         except Exception as e:
             logging.error(e)
-            return Response({"message": "Note Not Found", "Error": {}.format(e)}, status=status.HTTP_400_BAD_REQUEST)
+            print(e)
+            return Response({"message": "Your Notes are not Found"})
 
     @verify_token
     def put(self, request):
@@ -61,10 +72,15 @@ class Notes(APIView):
             serializer = NotesSerializer(note, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
+            RedisOpertions().update_note(serializer.data)
+
             return Response({"Message": "Note Updated", "Data": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
+            print(e)
             logging.error(e)
-            return Response({"message": "Note Updation Unsuccesfull","error":"{}".format(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Note Updation Unsuccesfull", "error": "{}".format(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     @verify_token
     def delete(self, request):
@@ -74,8 +90,12 @@ class Notes(APIView):
         :return:
         """
         try:
+
             note = Note.objects.get(pk=request.data["id"])
+
+            RedisOpertions().delete_note(request.data["id"], request.data["user_id"])
             note.delete()
+
             return Response({"message": "Note Deleted ", "status": status.HTTP_204_NO_CONTENT},
                             status=status.HTTP_200_OK)
         except Exception as e:
