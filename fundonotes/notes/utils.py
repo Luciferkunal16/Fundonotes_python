@@ -1,14 +1,17 @@
-from _pytest import logging
+import json
+import logging
+
 from django.http import QueryDict
 from rest_framework.response import Response
-
 from user.utils import EncodeDecodeToken
+from .redis_service import RedisService
 
 
 def verify_token(function):
     """
     this function is created for verifying user
     """
+
     def wrapper(self, request):
         if 'HTTP_AUTHORIZATION' not in request.META:
             resp = Response({'message': 'Token not provided in the header'})
@@ -20,3 +23,5 @@ def verify_token(function):
         return function(self, request)
 
     return wrapper
+
+
