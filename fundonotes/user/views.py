@@ -1,17 +1,14 @@
 import json
 import logging
-
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 from django.contrib.auth import get_user_model, authenticate
-
-from .utils import EncodeDecodeToken,Email
-
+from .utils import EncodeDecodeToken
+from .task import send_email
 from .serializers import UserSerializer
-from django.core.mail import send_mail
 
 logging.basicConfig(filename="user.log", level=logging.INFO)
 
@@ -32,7 +29,7 @@ class UserRegistration(APIView):
             user = User.objects.filter(username=serializer.data['username'])
             if user:
                 return Response({"message": "User Already Registered"},
-                                status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST, user=serializer.data['username'])
             new_user = User.objects.create_user(username=serializer.data['username'],
                                                 password=serializer.data['password'],
                                                 email=serializer.data['email'],
@@ -40,16 +37,14 @@ class UserRegistration(APIView):
 
                                                 )
 
-
             encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
-
             send_email.delay(token=encoded_token, to=serializer.data['email'], name=serializer.data['username'])
             logging.debug("Registration Successfull")
             return Response(
                 {
                     "message": "User Registered Successfully ",
 
-                }, status=status.HTTP_201_CREATED)
+                }, status=status.HTTP_201_CREATED, user=serializer.data['username'])
 
         except Exception as e:
             print(e)
@@ -73,8 +68,9 @@ class UserLogin(APIView):
             user = authenticate(username=serializer.data['username'], password=serializer.data['password'])
 
             if user and user.is_verified == True:
-                token=EncodeDecodeToken.encode_token(payload=user.pk)
-                return Response({"message": "Login Successfull!!","token":"{}".format(token)}, status=status.HTTP_201_CREATED)
+                token = EncodeDecodeToken.encode_token(payload=user.pk)
+                return Response({"message": "Login Successfull!!", "token": "{}".format(token)},
+                                status=status.HTTP_201_CREATED)
 
             return Response({
                 "message": "login Unsuccessfull"
@@ -87,7 +83,7 @@ class UserLogin(APIView):
 
 
 class ValidateToken(APIView):
-    def get(self,request,token):
+    def get(self, request, token):
         """
         use to validate the user and verify the user
         :param token:
