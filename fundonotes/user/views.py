@@ -43,7 +43,7 @@ class UserRegistration(APIView):
 
             encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
 
-            Email.send_email(token=encoded_token,to=serializer.data['email'] , name=serializer.data['username'])
+            send_email.delay(token=encoded_token, to=serializer.data['email'], name=serializer.data['username'])
             logging.debug("Registration Successfull")
             return Response(
                 {
