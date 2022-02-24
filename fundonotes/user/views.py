@@ -9,12 +9,24 @@ from django.contrib.auth import get_user_model, authenticate
 from .utils import EncodeDecodeToken
 from .task import send_email
 from .serializers import UserSerializer
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 logging.basicConfig(filename="user.log", level=logging.INFO)
 
 
 class UserRegistration(APIView):
-
+    @swagger_auto_schema(
+        operation_summary="register",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='email'),
+                'phone_number': openapi.Schema(type=openapi.TYPE_STRING, description='phone_number'),
+            }
+        ))
     def post(self, request):
         """
         :Description:
@@ -24,9 +36,12 @@ class UserRegistration(APIView):
         :return:response
         """
         try:
+
             serializer = UserSerializer(data=request.data)
+
             serializer.is_valid(raise_exception=True)
             user = User.objects.filter(username=serializer.data['username'])
+
             if user:
                 return Response({"message": "User Already Registered"},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -56,6 +71,15 @@ class UserRegistration(APIView):
 
 
 class UserLogin(APIView):
+    @swagger_auto_schema(
+        operation_summary="login",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
+            }
+        ))
     def post(self, request):
         """
         For login of user

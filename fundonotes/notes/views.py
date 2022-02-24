@@ -5,13 +5,25 @@ from rest_framework import status
 from .models import Note
 from .serializer import NotesSerializer
 from .utils import verify_token
-
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 logging.basicConfig(filename="note.log", level=logging.INFO)
 
 
 class Notes(APIView):
 
+
+    @swagger_auto_schema(
+        operation_summary="Add",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description="description"),
+            }
+        ),
+    )
     @verify_token
     def post(self, request):
         """
@@ -31,6 +43,9 @@ class Notes(APIView):
             return Response({"message": "Note Creation Unsuccessfull", "error": "{}".format(e)},
                             status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        operation_summary="get",
+    )
     @verify_token
     def get(self, request):
         """
@@ -52,6 +67,17 @@ class Notes(APIView):
             print(e)
             return Response({"message": "Your Notes are not Found"})
 
+    @swagger_auto_schema(
+        operation_summary="update ",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description="description"),
+                'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="note id"),
+            }
+        ),
+    )
     @verify_token
     def put(self, request):
         """
@@ -72,6 +98,15 @@ class Notes(APIView):
             return Response({"message": "Note Updation Unsuccesfull", "error": "{}".format(e)},
                             status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        operation_summary="Delete",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="note id"),
+            }
+        ),
+    )
     @verify_token
     def delete(self, request):
         """
@@ -83,6 +118,7 @@ class Notes(APIView):
 
             note = Note.objects.get(pk=request.data["id"])
 
+            RedisOpertions().delete_note(request.data["id"], request.data["user_id"])
             note.delete()
 
             return Response({"message": "Note Deleted "},

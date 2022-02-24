@@ -1,7 +1,3 @@
-import json
-import logging
-
-from django.http import QueryDict
 from rest_framework.response import Response
 from user.utils import EncodeDecodeToken
 
