@@ -44,6 +44,7 @@ class Notes(APIView):
             note = Note.objects.filter(user_id=request.data.get("user_id"))
             serializer = NotesSerializer(note, many=True)
 
+
             return Response(
                 {"message": "Your Notes are Found", "data": serializer.data},
                 status=status.HTTP_302_FOUND)
