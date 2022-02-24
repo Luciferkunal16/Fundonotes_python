@@ -5,14 +5,12 @@ from rest_framework import status
 from .models import Note
 from .serializer import NotesSerializer
 from .utils import verify_token
-from .utils import RedisOpertions
+
 
 logging.basicConfig(filename="note.log", level=logging.INFO)
 
 
 class Notes(APIView):
-    def __init__(self):
-        self.redis_obj = RedisOpertions()
 
     @verify_token
     def post(self, request):
@@ -43,7 +41,7 @@ class Notes(APIView):
         try:
             note = Note.objects.filter(user_id=request.data.get("user_id"))
             serializer = NotesSerializer(note, many=True)
-            # print(RedisOpertions().get_note(user_id=request.data.get("user_id")))
+
 
             return Response(
                 {"message": "Your Notes are Found", "data": serializer.data},
@@ -85,7 +83,6 @@ class Notes(APIView):
 
             note = Note.objects.get(pk=request.data["id"])
 
-            RedisOpertions().delete_note(request.data["id"], request.data["user_id"])
             note.delete()
 
             return Response({"message": "Note Deleted "},
