@@ -4,7 +4,6 @@ import logging
 from django.http import QueryDict
 from rest_framework.response import Response
 from user.utils import EncodeDecodeToken
-from .redis_service import RedisService
 
 
 def verify_token(function):

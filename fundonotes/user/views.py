@@ -6,9 +6,17 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 from django.contrib.auth import get_user_model, authenticate
+
+
+from .utils import EncodeDecodeToken
+
+from .serializers import UserSerializer
+from .task import send_email
+
 from .utils import EncodeDecodeToken
 from .task import send_email
 from .serializers import UserSerializer
+
 
 logging.basicConfig(filename="user.log", level=logging.INFO)
 

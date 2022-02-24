@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user', 'notes',
-    'django_celery_results',
+    # 'rest_framework_swagger',
+    # 'drf_yasg',
 
 ]
 AUTH_USER_MODEL = 'user.User'
@@ -49,7 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fundonotes.custom_middleware.CustomMiddleware',  # add custom middleware
+    # 'fundonotes.custom_middleware.CustomMiddleware',  # add custom middleware
 ]
 
 ROOT_URLCONF = 'fundonotes.urls'

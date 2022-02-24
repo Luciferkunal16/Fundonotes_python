@@ -13,7 +13,7 @@ app.conf.update(timezone='Asia/Kolkata')
 app.config_from_object(settings, namespace='CELERY')
 
 app.autodiscover_tasks()
-app = Celery('fundooNotes', broker='amqp://guest@localhost//')
+app = Celery('fundonotes', broker='amqp://guest@localhost//')
 
 
 @app.task(bind=True)
