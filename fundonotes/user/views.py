@@ -8,10 +8,10 @@ from rest_framework.views import APIView
 from .models import User
 from django.contrib.auth import get_user_model, authenticate
 
-from .utils import EncodeDecodeToken,Email
+from .utils import EncodeDecodeToken
 
 from .serializers import UserSerializer
-from django.core.mail import send_mail
+from .task import send_email
 
 logging.basicConfig(filename="user.log", level=logging.INFO)
 
@@ -40,9 +40,7 @@ class UserRegistration(APIView):
 
                                                 )
 
-
             encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
-
             send_email.delay(token=encoded_token, to=serializer.data['email'], name=serializer.data['username'])
             logging.debug("Registration Successfull")
             return Response(
