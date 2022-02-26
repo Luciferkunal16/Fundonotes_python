@@ -7,12 +7,15 @@ from .serializer import NotesSerializer
 from .utils import verify_token
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django.db import connection
+from datetime import datetime
+
+cursor = connection.cursor()
 
 logging.basicConfig(filename="note.log", level=logging.INFO)
 
 
 class Notes(APIView):
-
 
     @swagger_auto_schema(
         operation_summary="Add",
@@ -33,10 +36,13 @@ class Notes(APIView):
         """
 
         try:
+            cursor.execute('INSERT into notes_note (title,description,user_id_id,created_at) values (%s,%s,%s,%s)',
+                           [request.data.get('title'), request.data.get('description'), request.data.get('user_id'),
+                            datetime.now()])
             serializer = NotesSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
-            serializer.save()
+            # serializer.save()
 
             return Response({"message": "Note Created", "data": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -54,9 +60,12 @@ class Notes(APIView):
         :return: Response
         """
         try:
+            for notes in Note.objects.raw(
+                    'SELECT id,description from notes_note where user_id_id= %s', [request.data.get('user_id')]):
+                print(notes.title, " ", notes.description)
+
             note = Note.objects.filter(user_id=request.data.get("user_id"))
             serializer = NotesSerializer(note, many=True)
-
 
             return Response(
                 {"message": "Your Notes are Found", "data": serializer.data},
@@ -86,10 +95,16 @@ class Notes(APIView):
         :return:
         """
         try:
+            cursor.execute(
+                'UPDATE  notes_note SET title = %s,description=%s,created_at=%s WHERE user_id_id=%s AND id=%s',
+                [request.data.get('title'), request.data.get('description'), datetime.now(),
+                 request.data.get('user_id'),
+                 request.data.get('id')])
+
             note = Note.objects.get(id=request.data["id"])
             serializer = NotesSerializer(note, data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            # serializer.save()
 
             return Response({"message": "Note Updated", "Data": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -115,11 +130,11 @@ class Notes(APIView):
         :return:
         """
         try:
+            cursor.execute( 'DELETE FROM notes_note WHERE id=%s', [request.data.get('id')])
 
-            note = Note.objects.get(pk=request.data["id"])
+            # note = Note.objects.get(pk=request.data["id"])
 
-            RedisOpertions().delete_note(request.data["id"], request.data["user_id"])
-            note.delete()
+            # note.delete()
 
             return Response({"message": "Note Deleted "},
                             status=status.HTTP_200_OK)

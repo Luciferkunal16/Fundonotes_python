@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from user.utils import EncodeDecodeToken
 
 
+
 def verify_token(function):
     """
     this function is created for verifying user
@@ -18,5 +19,7 @@ def verify_token(function):
         return function(self, request)
 
     return wrapper
+
+
 
 
