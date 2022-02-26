@@ -38,10 +38,8 @@ class UserRegistration(APIView):
         try:
 
             serializer = UserSerializer(data=request.data)
-
             serializer.is_valid(raise_exception=True)
             user = User.objects.filter(username=serializer.data['username'])
-
             if user:
                 return Response({"message": "User Already Registered"},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -57,7 +55,7 @@ class UserRegistration(APIView):
             logging.debug("Registration Successfull")
             return Response(
                 {
-                    "message": "User Registered Successfully ",
+                    "message": "User Registration Successfull ",
 
                 }, status=status.HTTP_201_CREATED)
 
