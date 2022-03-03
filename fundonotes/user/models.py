@@ -7,7 +7,3 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
 
 
-class LogTable(models.Model):
-    hit_time = models.DateTimeField(default=datetime.now, blank=True)
-    type_of_request = models.CharField(max_length=250)
-    response = models.CharField(max_length=200)
