@@ -29,7 +29,7 @@ class UserRegistration(APIView):
             user = User.objects.filter(username=serializer.data['username'])
             if user:
                 return Response({"message": "User Already Registered"},
-                                status=status.HTTP_400_BAD_REQUEST, user=serializer.data['username'])
+                                status=status.HTTP_400_BAD_REQUEST)
             new_user = User.objects.create_user(username=serializer.data['username'],
                                                 password=serializer.data['password'],
                                                 email=serializer.data['email'],
@@ -44,7 +44,7 @@ class UserRegistration(APIView):
                 {
                     "message": "User Registered Successfully ",
 
-                }, status=status.HTTP_201_CREATED, user=serializer.data['username'])
+                }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             print(e)
