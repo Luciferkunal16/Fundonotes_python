@@ -12,8 +12,6 @@ from django.utils.decorators import method_decorator
 
 logging.basicConfig(filename="note.log", level=logging.INFO)
 
-import logging
-
 logging.basicConfig(filename="views.log", filemode="w")
 
 
@@ -42,7 +40,7 @@ class Notes(ListCreateAPIView):
         serializer = Noteserializer(data=request.data)
         serializer.is_valid(True)
         serializer.save(id=self.request.data.get("id"))
-        return Response(serializer.data)
+        return Response({"message": "Note creaed Successfully", "data": serializer.data})
 
     def get_serializer_class(self):
         return NotesSerializer
