@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'user', 'notes',
     'rest_framework_swagger',
     'drf_yasg',
+    'corsheaders',
 
 ]
 AUTH_USER_MODEL = 'user.User'
@@ -50,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'fundonotes.custom_middleware.CustomMiddleware',  # add custom middleware
 ]
 
@@ -156,3 +159,4 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+CORS_ALLOW_ALL_ORIGINS = True
