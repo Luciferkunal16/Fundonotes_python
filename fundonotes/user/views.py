@@ -1,4 +1,4 @@
-import json
+
 import logging
 from django.http import HttpResponse
 from rest_framework import status
@@ -24,7 +24,10 @@ class UserRegistration(APIView):
                 'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
                 'email': openapi.Schema(type=openapi.TYPE_STRING, description='email'),
-                'phone_number': openapi.Schema(type=openapi.TYPE_STRING, description='phone_number'),
+                # 'phone_number': openapi.Schema(type=openapi.TYPE_STRING, description='phone_number'),
+                'first_name':openapi.Schema(type=openapi.TYPE_STRING, description='first_name'),
+                'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='last_name'),
+
             }
         ))
     def post(self, request):
@@ -46,7 +49,9 @@ class UserRegistration(APIView):
             new_user = User.objects.create_user(username=serializer.data['username'],
                                                 password=serializer.data['password'],
                                                 email=serializer.data['email'],
-                                                phone_number=serializer.data['phone_number'],
+                                                # phone_number=serializer.data['phone_number'],
+                                                first_name=serializer.data['first_name'],
+                                                last_name=serializer.data['last_name']
 
                                                 )
 
