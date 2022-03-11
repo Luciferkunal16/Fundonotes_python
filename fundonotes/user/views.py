@@ -102,7 +102,6 @@ class ValidateToken(APIView):
             user = User.objects.get(id=decoded_token.get('user_id'))
             user.is_verified = True
             user.save()
-
             return Response({"message": "Validation Successfull"},
                             status=status.HTTP_201_CREATED)
         except Exception as e:
