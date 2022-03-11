@@ -1,3 +1,5 @@
+from aifc import Error
+
 import jwt
 from django.core.mail import send_mail
 from fundonotes import settings
@@ -26,4 +28,11 @@ class EncodeDecodeToken:
         return decoded_token
 
 
+class Error(Exception):
+    # Error is derived class for Exception, but
+    # Base class for exceptions in this module
+    pass
 
+
+class email_error(Error):
+    pass

@@ -5,11 +5,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 from django.contrib.auth import get_user_model, authenticate
-from .utils import EncodeDecodeToken
+from .utils import EncodeDecodeToken, email_error
 from .task import send_email
 from .serializers import UserSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+import re
+from .utils import email_error
+from rest_framework.exceptions import ValidationError
 
 logging.basicConfig(filename="user.log", level=logging.INFO)
 
@@ -44,25 +47,42 @@ class UserRegistration(APIView):
             user = User.objects.filter(username=serializer.data['username'])
             if user:
                 return Response({"message": "User Already Registered"},
+
                                 status=status.HTTP_400_BAD_REQUEST)
+            regex_pattern_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+
+            if bool(re.match(regex_pattern_email, serializer.data['email'])) is False:
+                raise email_error
             new_user = User.objects.create_user(username=serializer.data['username'],
                                                 password=serializer.data['password'],
                                                 email=serializer.data['email'],
                                                 # phone_number=serializer.data['phone_number'],
                                                 first_name=serializer.data['first_name'],
                                                 last_name=serializer.data['last_name']
-
                                                 )
 
             encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
             send_email.delay(token=encoded_token, to=serializer.data['email'], name=serializer.data['username'])
-            logging.debug("Registration Successfull")
+            logging.debug("Registration Successfully")
             return Response(
                 {
                     "message": "User Registration Successfull ",
 
                 }, status=status.HTTP_201_CREATED)
-
+        except email_error :
+            logging.error("Wrong email Address")
+            return Response(
+                {
+                    "message": "Wrong email Address"
+                },
+                status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError:
+            logging.error("Validation failed")
+            return Response(
+                {
+                    "message": "validation failed"
+                },
+                status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
             logging.error(e)
