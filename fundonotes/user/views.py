@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from .models import User
 from django.contrib.auth import get_user_model, authenticate
 
-from .utils import EncodeDecodeToken,Email
+from .utils import EncodeDecodeToken, Email
 
 from .serializers import UserSerializer
 from django.core.mail import send_mail
@@ -42,7 +42,7 @@ class UserRegistration(APIView):
 
             encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
             print(encoded_token)
-            Email.send_email(token=encoded_token,to=serializer.data['email'],name=serializer.data['username'])
+            Email.send_email(token=encoded_token, to=serializer.data['email'], name=serializer.data['username'])
             logging.debug("Registration Successfull")
             return Response(
                 {
@@ -72,8 +72,9 @@ class UserLogin(APIView):
             user = authenticate(username=serializer.data['username'], password=serializer.data['password'])
 
             if user and user.is_verified == True:
-                token=EncodeDecodeToken.encode_token(payload=user.pk)
-                return Response({"message": "Login Successfull!!","token":"{}".format(token)}, status=status.HTTP_201_CREATED)
+                token = EncodeDecodeToken.encode_token(payload=user.pk)
+                return Response({"message": "Login Successfull!!", "token": "{}".format(token)},
+                                status=status.HTTP_201_CREATED)
 
             return Response({
                 "message": "login Unsuccessfull"
@@ -86,7 +87,7 @@ class UserLogin(APIView):
 
 
 class ValidateToken(APIView):
-    def get(self,request,token):
+    def get(self, request, token):
         """
         use to validate the user and verify the user
         :param token:

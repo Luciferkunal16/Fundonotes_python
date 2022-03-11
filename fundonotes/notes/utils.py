@@ -1,4 +1,3 @@
-from _pytest import logging
 from django.http import QueryDict
 from rest_framework.response import Response
 
@@ -9,6 +8,7 @@ def verify_token(function):
     """
     this function is created for verifying user
     """
+
     def wrapper(self, request):
         if 'HTTP_AUTHORIZATION' not in request.META:
             resp = Response({'message': 'Token not provided in the header'})

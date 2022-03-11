@@ -1,5 +1,3 @@
-from _testcapi import instancemethod
-
 from rest_framework import serializers
 from .models import User
 
