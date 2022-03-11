@@ -1,4 +1,3 @@
-
 import logging
 from django.http import HttpResponse
 from rest_framework import status
@@ -25,7 +24,7 @@ class UserRegistration(APIView):
                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
                 'email': openapi.Schema(type=openapi.TYPE_STRING, description='email'),
                 # 'phone_number': openapi.Schema(type=openapi.TYPE_STRING, description='phone_number'),
-                'first_name':openapi.Schema(type=openapi.TYPE_STRING, description='first_name'),
+                'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='first_name'),
                 'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='last_name'),
 
             }
