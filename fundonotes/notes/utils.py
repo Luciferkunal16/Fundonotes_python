@@ -7,7 +7,7 @@ def verify_token(function):
     this function is created for verifying user
     """
 
-    def wrapper(self, request):
+    def wrapper(self, request,*args,**kwargs):
         if 'HTTP_AUTHORIZATION' not in request.META:
             resp = Response({'message': 'Token not provided in the header'})
             resp.status_code = 400

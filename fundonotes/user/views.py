@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import  authenticate
 from .utils import EncodeDecodeToken, email_error
 from .task import send_email
 from .serializers import UserSerializer
@@ -56,7 +56,6 @@ class UserRegistration(APIView):
             new_user = User.objects.create_user(username=serializer.data['username'],
                                                 password=serializer.data['password'],
                                                 email=serializer.data['email'],
-                                                # phone_number=serializer.data['phone_number'],
                                                 first_name=serializer.data['first_name'],
                                                 last_name=serializer.data['last_name']
                                                 )

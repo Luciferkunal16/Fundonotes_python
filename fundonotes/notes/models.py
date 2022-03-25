@@ -11,4 +11,8 @@ class Note(models.Model):
     description = models.TextField(max_length=1000)
     created_at = models.DateTimeField(default=datetime.now, blank=True)
     user_id = models.ForeignKey(User, on_delete=models.PROTECT)
+    archive = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+    color = models.CharField(max_length=100,default='#FFFFFF')
+
 
