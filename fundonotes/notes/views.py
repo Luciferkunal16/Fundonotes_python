@@ -1,9 +1,11 @@
-import logging
+import logging, json
+
+from django.http import JsonResponse
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Note
+from .models import Note, Label
 from .serializer import NotesSerializer
 from .utils import verify_token
 from drf_yasg import openapi
@@ -21,6 +23,7 @@ class Notes(APIView):
             properties={
                 'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
                 'description': openapi.Schema(type=openapi.TYPE_STRING, description="description"),
+
             }
         ),
     )
@@ -124,10 +127,20 @@ class Notes(APIView):
         #             "message": "Note Deletion Unsuccessfull", "error": "{}".format(e)
         #         }, status=status.HTTP_400_BAD_REQUEST)
 
+
 class NotesDetails(RetrieveUpdateDestroyAPIView):
     queryset = Note.objects.all()
     lookup_field = "id"
 
+    @swagger_auto_schema(
+        operation_summary="delete ",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+
+            }
+        ),
+    )
     @verify_token
     def destroy(self, request, *args, **kwargs):
         """
@@ -146,3 +159,11 @@ class NotesDetails(RetrieveUpdateDestroyAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
+def add_label(request):
+    data = json.loads(request.body)
+    label = Label(name=data.get("name"), color_id=data.get("color_id"))
+    note1 = Note.objects.get(pk=data.get("note_id"))
+    label.save()
+    label.note.add(note1)
+
+    return JsonResponse({"message": "label Added "})

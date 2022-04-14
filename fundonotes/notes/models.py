@@ -13,6 +13,10 @@ class Note(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.PROTECT)
     archive = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
-    color = models.CharField(max_length=100,default='#FFFFFF')
+    color = models.CharField(max_length=100, default='#FFFFFF')
 
 
+class Label(models.Model):
+    name = models.CharField(max_length=100)
+    color_id = models.CharField(max_length=100)
+    note = models.ManyToManyField(Note)
