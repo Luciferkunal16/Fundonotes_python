@@ -96,53 +96,35 @@ class Notes(APIView):
             return Response({"message": "Note Updation Unsuccesfull", "error": "{}".format(e)},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # @swagger_auto_schema(
-        #     operation_summary="Delete",
-        #     request_body=openapi.Schema(
-        #         type=openapi.TYPE_OBJECT,
-        #         properties={
-        #             'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="note id"),
-        #         }
-        #     ),
-        #
-        # @verify_token
-        # def delete(self, request):
-        #     """
-        #     For deleting a Existing Note
-        #     :param request:
-        #     :return:
-        #     """
-        #     try:
-        #
-        #         note = Note.objects.get(pk=request.data["id"])
-        #         note.delete()
-        #         return Response({"message": "Note Deleted "},
-        #                         status=status.HTTP_200_OK)
-        #     except Exception as e:
-        #         logging.exception(e)
-        #         return Response({
-        #             "message": "Note Deletion Unsuccessfull", "error": "{}".format(e)
-        #         }, status=status.HTTP_400_BAD_REQUEST)
-
-class NotesDetails(RetrieveUpdateDestroyAPIView):
-    queryset = Note.objects.all()
-    lookup_field = "id"
+    @swagger_auto_schema(
+            operation_summary="Delete",
+            request_body=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="note id"),
+                }
+            ),)
 
     @verify_token
-    def destroy(self, request, *args, **kwargs):
+    def delete(self, request, note_id):
         """
-        Used for Deleting the Note by giving Note id
-        """
+                        delete note of user
+                        :param note_id: note_id
+                        :param request:
+                        :return:response
+                        """
         try:
-
-            note_object = self.get_object()
-            note = Note.objects.filter(id=note_object.id, user_id=request.data.get('user_id'))
+            note = Note.objects.get(pk=note_id)
+            print(note)
             note.delete()
-            return Response(data={"message": "Note Deleted"}, status=status.HTTP_200_OK)
-        except Exception as e:
-            logging.exception(e)
             return Response({
-                "message": "Note Deletion Unsuccessfull", "error": "{}".format(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-
+                "message": "Note delete successfully"
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logging.error(e)
+            print("reach Exception")
+            return Response(
+                {
+                    "message": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST)

@@ -151,6 +151,7 @@ CELERY_TIMEZONE = 'Asia/Kolkata'
 CELERY_RESULT_BACKEND = 'redis'
 # Swagger Settings
 SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'urls.swagger_info',  # your swagger_info on your urls page
     'SECURITY_DEFINITIONS': {
         "Auth Token eg [Bearer (JWT)]": {
             "type": "apiKey",
@@ -160,3 +161,8 @@ SWAGGER_SETTINGS = {
     }
 }
 CORS_ALLOW_ALL_ORIGINS = True
+REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'}
+
+REDOC_SETTINGS = {
+    'SPEC_URL': ('schema-json', {'format': '.json'}),
+}
