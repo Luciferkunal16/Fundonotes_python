@@ -18,5 +18,6 @@ class Note(models.Model):
 
 class Label(models.Model):
     name = models.CharField(max_length=100)
-    color_id = models.CharField(max_length=100)
+    color = models.CharField(max_length=100, default='white')
     note = models.ManyToManyField(Note)
+
