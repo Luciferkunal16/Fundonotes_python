@@ -136,7 +136,10 @@ class Notes(APIView):
 class Labels(APIView):
 
     def post(self, request):
-        label = Label(name=request.data.get('name'), color=request.data.get('color'))
-        label.save()
-        label.note.add(request.data.get('note_id'))
-        return JsonResponse({"message": "label Added "})
+        try:
+            label = Label(name=request.data.get('name'), color=request.data.get('color'))
+            label.save()
+            label.note.add(request.data.get('note_id'))
+            return JsonResponse({"message": "label Added "})
+        except Exception as err:
+            return  JsonResponse({"message":"Exception occurred ","error":str(err)})
