@@ -56,10 +56,10 @@ class Notes(APIView):
         :return: Response
         """
         try:
-            note = Note.objects.filter(user_id=request.data.get("user_id"))
+            notes = Note.objects.filter(user_id=request.data.get("user_id"))
+            # serializer = NotesSerializer(note, many=True)
+            data = get_note_with_label(notes)
 
-            serializer = NotesSerializer(note, many=True)
-            data=get_note_with_label(serializer)
             return Response(
                 {"message": "Your Notes are Found", "data": data},
                 status=status.HTTP_200_OK)
@@ -67,7 +67,7 @@ class Notes(APIView):
         except Exception as e:
             logging.error(e)
             print(e)
-            return Response({"message": "Your Notes are not Found"})
+            return Response({"message": "Your Notes are not Found", "error": str(e)})
 
     @swagger_auto_schema(
         operation_summary="update ",
@@ -137,9 +137,12 @@ class Labels(APIView):
 
     def post(self, request):
         try:
-            label = Label(name=request.data.get('name'), color=request.data.get('color'))
-            label.save()
-            label.note.add(request.data.get('note_id'))
+            note = Note.objects.get(id=request.data.get("note_id"))
+            if not note:
+                JsonResponse({"message":"note not exist"})
+            label = Label.objects.create(name=request.data.get("name"), color=request.data.get("color"))
+            note.label_name.add(label)
+
             return JsonResponse({"message": "label Added "})
         except Exception as err:
-            return  JsonResponse({"message":"Exception occurred ","error":str(err)})
+            return JsonResponse({"message": "Exception occurred ", "error": str(err)})

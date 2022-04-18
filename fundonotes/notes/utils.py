@@ -26,16 +26,20 @@ def verify_token(function):
     return wrapper
 
 
-def get_note_with_label(serializer):
-    notes = json.loads(json.dumps(serializer.data))
-    list_of_notes = list()
-    for note in notes:
-        labels = Label.objects.filter(note=note.get('id'))
-        list_of_labels = list()
-        for label in labels:
-            l = {"name": label.name, "color": label.color}
-            list_of_labels.append(l)
-        note.update({"label":list_of_labels})
-        list_of_notes.append(note)
-
-    return list_of_notes
+def get_note_with_label(notes):
+    """
+    for formatting the get note to imclude label in it
+    """
+    try:
+        list_of_notes = list()
+        for note in notes:
+            note_data = {"id": note.id, "title": note.title, 'description': note.description, 'created_at': note.created_at,
+                         'archive': note.archive, 'color': note.color, "labels": []}
+            list_of_labels = list()
+            for label in note.label_name.all():
+                label = {"name": label.name, "color": label.color}
+                list_of_labels.append(label)
+            note_data.update({"labels": list_of_labels})
+        return list_of_notes
+    except Exception as e:
+        print(e)

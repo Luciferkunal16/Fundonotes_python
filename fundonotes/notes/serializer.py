@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from rest_framework import serializers
-from .models import Note
+from .models import Note, Label
 
 
 class NotesSerializer(serializers.ModelSerializer):
@@ -10,7 +10,6 @@ class NotesSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validate_data):
-
         notes = Note.objects.create(
             title=validate_data.get("title"),
             description=validate_data.get("description"),
@@ -19,6 +18,7 @@ class NotesSerializer(serializers.ModelSerializer):
             archive=validate_data.get('archive'),
             is_deleted=validate_data.get('is_deleted')
 
-
         )
         return notes
+
+
