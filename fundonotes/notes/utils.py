@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from user.utils import EncodeDecodeToken
 import json
 from .models import Label
+from .serializer import LabelSerializer
 
 
 def verify_token(function):
@@ -33,13 +34,11 @@ def get_note_with_label(notes):
     try:
         list_of_notes = list()
         for note in notes:
-            note_data = {"id": note.id, "title": note.title, 'description': note.description, 'created_at': note.created_at,
-                         'archive': note.archive, 'color': note.color, "labels": []}
-            list_of_labels = list()
-            for label in note.label_name.all():
-                label = {"name": label.name, "color": label.color}
-                list_of_labels.append(label)
-            note_data.update({"labels": list_of_labels})
+            label = LabelSerializer(note.label_name.all(), many=True)
+            note_data = {"id": note.id, "title": note.title, 'description': note.description,
+                         'created_at': note.created_at,
+                         'archive': note.archive, 'color': note.color, "labels": label.data}
+            list_of_notes.append(note_data)
         return list_of_notes
     except Exception as e:
         print(e)

@@ -22,3 +22,7 @@ class NotesSerializer(serializers.ModelSerializer):
         return notes
 
 
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Label
+        fields = "__all__"
