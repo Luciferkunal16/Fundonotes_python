@@ -20,4 +20,5 @@ def verify_token(function):
             return function(self, request)
         else:
             return function(self, request, note_id)
+
     return wrapper

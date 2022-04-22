@@ -1,8 +1,11 @@
 from aifc import Error
-
-import jwt
+from .models import User
+import jwt,re
 from django.core.mail import send_mail
 from fundonotes import settings
+from django.db.models import signals
+from django.dispatch import receiver
+
 
 class EncodeDecodeToken:
     """
@@ -52,3 +55,20 @@ class EmailService:
                           "http://127.0.0.1:8000/user/validate/{}".format(name,
                                                                           token),
                   subject="Link for Your Registration", fail_silently=False, )
+
+
+class UserSignals:
+    @staticmethod
+    @receiver(signals.pre_save, sender=User)
+    def check_email_regex(sender, instance, **kwargs):
+        regex_pattern_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        if bool(re.match(regex_pattern_email, instance.email)) is False:
+            raise email_error
+        else:
+            print("email is good")
+
+    @staticmethod
+    @receiver(signals.post_save, sender=User)
+    def notify_by_email(sender, instance, **kwargs):
+        EmailService.send_email(to=instance.email, token=EncodeDecodeToken.encode_token(payload=instance.pk), name=instance.username)
+        print("email is sent")

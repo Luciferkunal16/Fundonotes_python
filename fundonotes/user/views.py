@@ -4,14 +4,14 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
-from django.contrib.auth import  authenticate
+from django.contrib.auth import authenticate
 from .utils import EncodeDecodeToken, email_error
 from .task import send_email
 from .serializers import UserSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 import re
-from .utils import email_error,EmailService
+from .utils import email_error, EmailService
 from rest_framework.exceptions import ValidationError
 
 logging.basicConfig(filename="user.log", level=logging.INFO)
@@ -41,16 +41,11 @@ class UserRegistration(APIView):
         :return:response
         """
         try:
-            print("--------")
             serializer = UserSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             user = User.objects.filter(username=serializer.data['username'])
             if user:
-                return Response({"message": "User Already Registered"},status=status.HTTP_400_BAD_REQUEST)
-            regex_pattern_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-
-            if bool(re.match(regex_pattern_email, serializer.data['email'])) is False:
-                raise email_error
+                return Response({"message": "User Already Registered"}, status=status.HTTP_400_BAD_REQUEST)
             new_user = User.objects.create_user(username=serializer.data['username'],
                                                 password=serializer.data['password'],
                                                 email=serializer.data['email'],
@@ -59,14 +54,13 @@ class UserRegistration(APIView):
                                                 )
 
             encoded_token = EncodeDecodeToken.encode_token(payload=new_user.pk)
-            EmailService.send_email(to=serializer.data['email'],token=encoded_token,name=serializer.data.get('username'))
             logging.debug("Registration Successfully")
             return Response(
                 {
-                    "message": "User Registration Successfull ",
+                    "message": "User Registration Successfull ", "token": encoded_token
 
                 }, status=status.HTTP_201_CREATED)
-        except email_error :
+        except email_error:
             logging.error("Wrong email Address")
             return Response(
                 {

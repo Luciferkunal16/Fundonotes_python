@@ -97,14 +97,13 @@ class Notes(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
-            operation_summary="Delete",
-            request_body=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="note id"),
-                }
-            ),)
-
+        operation_summary="Delete",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="note id"),
+            }
+        ), )
     @verify_token
     def delete(self, request, note_id):
         """
