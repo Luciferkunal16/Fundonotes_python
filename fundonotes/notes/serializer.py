@@ -8,9 +8,9 @@ class NotesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = "__all__"
+        lookup_field = "id"
 
     def create(self, validate_data):
-
         notes = Note.objects.create(
             title=validate_data.get("title"),
             description=validate_data.get("description"),
@@ -18,7 +18,6 @@ class NotesSerializer(serializers.ModelSerializer):
             color=validate_data.get('color'),
             archive=validate_data.get('archive'),
             is_deleted=validate_data.get('is_deleted')
-
 
         )
         return notes

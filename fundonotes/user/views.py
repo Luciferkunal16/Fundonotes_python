@@ -1,4 +1,4 @@
-import logging
+import logging,re
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,7 +10,6 @@ from .task import send_email
 from .serializers import UserSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-import re
 from .utils import email_error, EmailService
 from rest_framework.exceptions import ValidationError
 

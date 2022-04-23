@@ -4,7 +4,8 @@ from . import views
 
 app_name = 'note'
 urlpatterns = [
-    path('note', views.Notes.as_view(), name='note'),
-    path('note/<int:note_id>', views.Notes.as_view(), name='delete')
+    path('note', views.DetailedNoteMixin.as_view(), name='note'),
+    path('note/<int:pk>', views.DetailedNoteMixin.as_view(), name='delete'),
+
 
 ]
